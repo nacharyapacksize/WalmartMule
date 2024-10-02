@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+    <http:listener-config name="walmartpacksize-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="walmartpacksize-config" api="resource::8cd1f13f-a715-46ef-a571-046930e0e5e3:walmartpacksize:1.0.1:raml:zip:walmartpacksize.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="b54375f7-d91a-4058-82af-10e02b439159" >
+		<salesforce:basic-connection username="nikhil.acharya@packsize.com.walmartsn" password="here@thewaLL4163" securityToken="gmFVu3wgxB4Ll14QDDpqkv0fL" url="https://test.salesforce.com/services/Soap/u/60.0"/>
+	</salesforce:sfdc-config>
+	<api-gateway:autodiscovery apiId="19983619" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="363c922c-fb24-4255-81f3-c168edb51e91" flowRef="walmartpacksize-main" />
+	<flow name="walmartpacksize-main">
+        <http:listener config-ref="walmartpacksize-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="walmartpacksize-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="walmartpacksize-console">
+        <http:listener config-ref="walmartpacksize-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="walmartpacksize-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="post:\incident-info:application\json:walmartpacksize-config">
+        <set-variable doc:name="IncidentDetails" doc:id="a012f38e-4fff-49cd-9c4d-75eb27c8000e" variableName="IncidentDetails" value="#[output application/json&#10;---&#10;{&#10;	site_contact: payload.site_contact,&#10;	site_contact_email: payload.site_contact_email,&#10;	site_contact_phone: payload.site_contact_phone,&#10;	site_country: payload.site_country,&#10;	site: payload.site,&#10;	number: payload.number,&#10;	comments_and_work_notes: payload.comments_and_work_notes,&#10;	work_notes_list: payload.work_notes_list,&#10;	short_description: payload.short_description,&#10;	description: payload.description&#10;}]"/>
+		<set-variable doc:name="Contact" doc:id="ce379957-f1f0-4e14-9ca5-49c0429336b2" variableName="ContactVariables" value='#[{&#10;		"FirstName" : (payload.site_contact splitBy(" ") )[0],&#10;		"LastName" :  (payload.site_contact splitBy(" ") )[-1],&#10;		"Email" : payload.site_contact_email,&#10;		"Phone" : payload.site_contact_phone&#10;	}]'/>
+		<ee:transform doc:name="Transform Message" doc:id="f9bce74e-d091-4359-92d8-99078479a124" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var site = payload.site
+var siteNumber = site splitBy "."[0] 
+---
+{
+    "query": siteNumber[0]
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1a4cb704-8fa8-4c82-86ee-07bc455ac029" message="#[payload.query]"/>
+		<salesforce:query-all doc:name="Query Account" doc:id="9e922290-69db-4e7f-8981-af7b483d5432" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[#["SELECT Name, Site_Name__c, Account__c FROM Site__c WHERE WFC__c = '" ++ payload.query ++ "' OR FC_DC__c Like '" ++ payload.query ++ "'"]]]></salesforce:salesforce-query>
+		</salesforce:query-all>
+		<logger level="INFO" doc:name="Logger" doc:id="0fa48992-a3c3-40ba-9f68-aca955e6033d" message="#[payload]"/>
+		<set-variable value="#[payload.Account__c]" doc:name="Account ID" doc:id="6b81712b-9aed-4c9b-8d11-a03e2cbed457" variableName="AccountID"/>
+		<ee:transform doc:name="Transform Message" doc:id="e8df4165-cb43-444d-8e04-1c5aa3ab8db9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"email" : vars.ContactVariables.Email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:query-all doc:name="Query Contact" doc:id="e3a6df50-dba8-489a-8c90-4aca2f9451a0" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[#["SELECT Id, Name, Email FROM Contact WHERE Email = '"++ payload.email ++"'"]]]></salesforce:salesforce-query>
+		</salesforce:query-all>
+		<set-variable value="#[payload.Id]" doc:name="ContactID" doc:id="c9aec376-222d-4239-ba6a-443e22426144" variableName="ContactID"/>
+		<ee:transform doc:name="Transform Message" doc:id="bf358208-7c08-48fb-a49f-0dba9472f4c2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+	{ 
+	"email":payload.Email[0],
+		"id":payload.Id[0]
+		
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c74edf40-da67-404f-81b0-003eba5b9abe" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="da5cb5ac-be2a-4ccd-911d-137a2da4b15d" >
+			<when expression="#[payload.id == null]">
+				<ee:transform doc:name="Transform Message" doc:id="35ed7bfa-98d0-4b59-9e3a-2343ce3f0366" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.AccountID[0],
+	LastName: vars.ContactVariables.LastName,
+	FirstName: vars.ContactVariables.FirstName,
+	Phone: vars.ContactVariables.Phone,
+	Email: vars.ContactVariables.Email
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create doc:name="Create Contact" doc:id="058973ee-271a-4a21-8259-6901cb1303c2" config-ref="Salesforce_Config" type="Contact"/>
+				<logger level="INFO" doc:name="Logger" doc:id="baa9787c-ea50-4acf-85f3-27f2dafa8c7a" message="#[payload]" />
+				<ee:transform doc:name="Transform Message" doc:id="f2abd289-283a-472b-bcef-d079c2f5cae5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.AccountID[0],
+	ContactId: payload.items.id,
+	Subject: vars.IncidentDetails.short_description,
+	Description: vars.IncidentDetails.description
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create doc:name="Create Case" doc:id="10415fcc-b518-4a33-929e-111e2a76c5bf" config-ref="Salesforce_Config" type="Case"/>
+				<ee:transform doc:name="Transform Message" doc:id="61c4c263-3313-499a-ae84-d8b40f87b95a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	CaseID : payload.items.id
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="275fae22-9173-45df-acdc-4352ccec1472" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="c8243531-88b9-487f-95cc-46ebf889122f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	AccountId: vars.AccountID[0],
+	ContactId: vars.ContactID[0],
+	Subject: vars.IncidentDetails.short_description,
+	Description: vars.IncidentDetails.description
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="06614632-ebc3-4528-aecf-fc79b9575a00" message="#[payload]"/>
+				<salesforce:create doc:name="Create" doc:id="f0b01a47-ad72-4f9d-b6ab-069c063758f4" config-ref="Salesforce_Config" type="Case"/>
+				<ee:transform doc:name="Transform Message" doc:id="ad1a90ef-e237-4f49-9faa-8da5ade74896" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	CaseID : payload.items[0].id
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="f260f517-18b5-42e2-93a1-bc370b860aba" message="#[payload]"/>
+			</otherwise>
+		</choice>
+    </flow>
+</mule>

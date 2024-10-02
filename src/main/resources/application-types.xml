@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="VAR" format="json">
+      <types:shape format="weave" example="examples/var-1.txt"><![CDATA[%dw 2.0
+
+type VAR = {|
+  site_name: String, 
+  site_type: String, 
+  site_banner: String, 
+  site_format: String, 
+  site_street: String, 
+  site_state: String, 
+  site_zip: String, 
+  site_city: String, 
+  site_longitude: Number {"typeId": "double"}, 
+  site_latitude: Number {"typeId": "double"}, 
+  site_contact: String, 
+  site_contact_email: String, 
+  site_contact_phone: String, 
+  site_country: String, 
+  site: String, 
+  number: String, 
+  resolved_at: String, 
+  comments_and_work_notes: String, 
+  work_notes_list: String, 
+  opened_at: String, 
+  state_display_value: String, 
+  short_description: String, 
+  description: String
+|} {"example": "{\\\"site_name\\\":\\\"BENTONVILLE, AR - 100\\\",\\\"site_type\\\":\\\"Retail\\\",\\\"site_banner\\\":\\\"WM Supercenter\\\",\\\"site_format\\\":\\\"Hypermarket\\\",\\\"site_street\\\":\\\"406 S WALTON BLVD\\\",\\\"site_state\\\":\\\"AR\\\",\\\"site_zip\\\":\\\"72712-5705\\\",\\\"site_city\\\":\\\"BENTONVILLE\\\",\\\"site_longitude\\\":-94.224844,\\\"site_latitude\\\":36.368173,\\\"site_contact\\\":\\\"Ryan Simpson\\\",\\\"site_contact_email\\\":\\\"rws0014.s00059.us@wal-mart.com\\\",\\\"site_contact_phone\\\":\\\"4792730060\\\",\\\"site_country\\\":\\\"US\\\",\\\"site\\\":\\\"100.US\\\",\\\"number\\\":\\\"INC34329069\\\",\\\"resolved_at\\\":\\\"2023-09-15T14:30:00Z\\\",\\\"comments_and_work_notes\\\":\\\"Packsize to post all messages to...\\\",\\\"work_notes_list\\\":\\\"\\\",\\\"opened_at\\\":\\\"2023-09-15T12:00:00Z\\\",\\\"state_display_value\\\":\\\"Resolved\\\",\\\"short_description\\\":\\\"Network issue at the site\\\",\\\"description\\\":\\\"There was a network issue at the Bentonville site affecting transactions...\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="Contact" format="json">
+      <types:shape format="weave" example="examples/cont.txt"><![CDATA[%dw 2.0
+
+type Contact = {|
+  FirstName: String, 
+  LastName: String, 
+  Email: String, 
+  Phone: String
+|} {"example": "{\\\"FirstName\\\":\\\"Nikhil\\\",\\\"LastName\\\":\\\"Acharya\\\",\\\"Email\\\":\\\"nikhil.acharya@packsize.com\\\",\\\"Phone\\\":\\\"9841002008\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="email" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#a012f38e-4fff-49cd-9c4d-75eb27c8000e">
+    <types:operation-declaration>
+      <types:inputs>
+        <types:parameter name="value" type="VAR"/>
+      </types:inputs>
+    </types:operation-declaration>
+  </types:enrichment>
+  <types:enrichment select="#ce379957-f1f0-4e14-9ca5-49c0429336b2">
+    <types:operation-declaration>
+      <types:inputs>
+        <types:parameter name="value" type="Contact"/>
+      </types:inputs>
+    </types:operation-declaration>
+  </types:enrichment>
+  <types:enrichment select="#e8df4165-cb43-444d-8e04-1c5aa3ab8db9">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="email"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
