@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config
+		name="walmartpacksize-httpListenerConfig">
+		<http:listener-connection host="${http.listener.host}"
+			port="${http.listener.port}" />
+	</http:listener-config>
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="67fe43b5-7bbd-4bb9-8fae-2d17c1ec31a3" flowRef="walmartpacksize-main"/>
+	<configuration-properties doc:name="Configuration properties" doc:id="cce8cf8b-046e-4d8c-bd7c-8f745e4adb5e" file="${env}.properties" />
+	<global-property doc:name="Global Property" doc:id="1e6218ae-2c71-451b-9f21-51f2f714e2ff" name="env" value="local" />
+
+</mule>
